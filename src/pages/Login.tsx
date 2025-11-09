@@ -55,7 +55,7 @@ export default function Login(){
           >{showSenha ? 'Ocultar' : 'Mostrar'}</button>
         </div>
         {error && <div style={{color:'salmon'}}>{error}</div>}
-        <button type="submit" disabled={loading}>{loading? 'Carregando...' : 'Entrar'}</button>
+        <button type="submit" className="btn btn-lg" disabled={loading}>{loading? 'Carregando...' : 'Entrar'}</button>
       </form>
     </div>
   )

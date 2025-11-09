@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Link } from 'react-router-dom'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import GlobalLoader from './components/GlobalLoader'
 import { useAuth } from './hooks/useAuth'
 
 const ProtectedRoute: React.FC<{children: JSX.Element}> = ({ children }) =>{
@@ -15,8 +16,9 @@ const ProtectedRoute: React.FC<{children: JSX.Element}> = ({ children }) =>{
 export default function App(){
   return (
     <div>
+      <GlobalLoader />
       <header className="container nav">
-        <h2><Link to="/" style={{color:'white',textDecoration:'none'}}>Series App</Link></h2>
+        <h2><Link to="/" style={{color:'black',textDecoration:'none'}}>MySeriesList</Link></h2>
         <nav>
           <Link to="/register" style={{marginRight:8}}>Registrar</Link>
           <Link to="/login">Login</Link>

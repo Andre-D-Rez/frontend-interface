@@ -29,8 +29,27 @@ export async function createSeries(payload: ISeries): Promise<ISeries>{
   return request('/api/series', { method: 'POST', body: JSON.stringify(payload), headers: getAuthHeaders() }) as Promise<ISeries>
 }
 
-export async function updateSeries(id: string, payload: Partial<ISeries>): Promise<ISeries>{
-  // use PATCH for partial updates (more flexible across backends)
+/**
+ * Buscar uma série específica por id
+ */
+export async function getSeriesById(id: string): Promise<ISeries | null>{
+  const res = await request(`/api/series/${id}`, { method: 'GET', headers: getAuthHeaders() })
+  return (res as ISeries) ?? null
+}
+
+/**
+ * Atualização completa da série (substitui todos os campos) — usa HTTP PUT.
+ * Use quando todos os campos da entidade forem atualizados.
+ */
+export async function updateSeriesPut(id: string, payload: ISeries): Promise<ISeries>{
+  return request(`/api/series/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: getAuthHeaders() }) as Promise<ISeries>
+}
+
+/**
+ * Atualização parcial da série — usa HTTP PATCH.
+ * Use quando apenas alguns campos devem ser modificados.
+ */
+export async function updateSeriesPatch(id: string, payload: Partial<ISeries>): Promise<ISeries>{
   return request(`/api/series/${id}`, { method: 'PATCH', body: JSON.stringify(payload), headers: getAuthHeaders() }) as Promise<ISeries>
 }
 

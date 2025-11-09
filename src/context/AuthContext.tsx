@@ -39,6 +39,18 @@ export const AuthProvider: React.FC<{children:React.ReactNode}> = ({ children })
     fetchMe()
   },[token])
 
+  // escutar evento global disparado por api.ts quando o token expirar
+  useEffect(()=>{
+    function onTokenExpired(){
+      try { localStorage.removeItem('token') } catch {}
+      setToken(null)
+      setUser(null)
+      navigate('/login')
+    }
+    window.addEventListener('tokenExpired', onTokenExpired)
+    return () => window.removeEventListener('tokenExpired', onTokenExpired)
+  },[])
+
   async function login(email:string, password:string){
     setLoading(true)
     try{
