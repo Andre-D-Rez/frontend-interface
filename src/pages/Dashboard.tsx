@@ -5,17 +5,18 @@ import { useAuth } from '../hooks/useAuth'
 import { toast } from 'react-toastify'
 
 function SeriesForm({ onSave, initial }:{ onSave:(s:ISeries)=>Promise<void>, initial?: Partial<ISeries> }){
-  const [titulo,setTitulo] = useState(initial?.titulo||'')
-  const [nota,setNota] = useState(initial?.nota?.toString()||'0')
-  const [numeroTemporadas,setNumeroTemporadas] = useState(initial?.numeroTemporadas?.toString()||'1')
-  const [episodiosTotais,setEpisodiosTotais] = useState(initial?.episodiosTotais?.toString()||'1')
-  const [episodiosAssistidos,setEpisodiosAssistidos] = useState(initial?.episodiosAssistidos?.toString()||'0')
-  const [status,setStatus] = useState(initial?.status||SeriesStatus.PLANEJADO)
+  const [titulo,setTitulo] = useState(initial?.titulo || '')
+  const [nota,setNota] = useState(initial?.nota?.toString() || '')
+  const [numeroTemporadas,setNumeroTemporadas] = useState(initial?.numeroTemporadas?.toString() || '')
+  const [episodiosTotais,setEpisodiosTotais] = useState(initial?.episodiosTotais?.toString() || '')
+  const [episodiosAssistidos,setEpisodiosAssistidos] = useState(initial?.episodiosAssistidos?.toString() || '')
+  const [status,setStatus] = useState<string>(initial?.status || '')
   const [error,setError] = useState<string | null>(null)
 
   async function submit(e:React.FormEvent){
     e.preventDefault()
     if (!titulo.trim()){ setError('Título é obrigatório'); return }
+    if (!status){ setError('Status é obrigatório'); return }
     const n = Number(nota)
     if (isNaN(n) || n < 0 || n > 10){ setError('Nota deve ser entre 0 e 10'); return }
     const payload: ISeries = {
@@ -37,7 +38,8 @@ function SeriesForm({ onSave, initial }:{ onSave:(s:ISeries)=>Promise<void>, ini
       <input placeholder="Número de temporadas" value={numeroTemporadas} onChange={e=>setNumeroTemporadas(e.target.value)} type="number" min={1} />
       <input placeholder="Episódios totais" value={episodiosTotais} onChange={e=>setEpisodiosTotais(e.target.value)} type="number" min={1} />
       <input placeholder="Episódios assistidos" value={episodiosAssistidos} onChange={e=>setEpisodiosAssistidos(e.target.value)} type="number" min={0} />
-      <select value={status} onChange={e=>setStatus(e.target.value as SeriesStatus)}>
+      <select value={status} onChange={e=>setStatus(e.target.value)}>
+        <option value="">-- Selecione o status --</option>
         <option value={SeriesStatus.PLANEJADO}>Planejado</option>
         <option value={SeriesStatus.ASSISTINDO}>Assistindo</option>
         <option value={SeriesStatus.CONCLUIDO}>Concluído</option>

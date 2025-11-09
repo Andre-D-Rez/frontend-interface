@@ -16,7 +16,7 @@ export default function App(){
   return (
     <div>
       <header className="container nav">
-        <h2><Link to="/" style={{color:'white',textDecoration:'none'}}>Series App</Link></h2>
+        <h2><Link to="/" style={{color:'black',textDecoration:'none'}}>MySeriesList</Link></h2>
         <nav>
           <Link to="/register" style={{marginRight:8}}>Registrar</Link>
           <Link to="/login">Login</Link>
