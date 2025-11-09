@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useRef, useState } from 'react'
 import { loginUser, registerUser, me as meReq } from '../services/auth'
 import { useNavigate } from 'react-router-dom'
 
@@ -20,9 +20,41 @@ export const AuthProvider: React.FC<{children:React.ReactNode}> = ({ children })
   const [token,setToken] = useState<string|null>(localStorage.getItem('token'))
   const [loading,setLoading] = useState<boolean>(false)
   const navigate = useNavigate()
+  const expiryTimer = useRef<number | null>(null)
 
   useEffect(()=>{
+    // schedule auto-logout when token expires (client-side)
+    function scheduleExpiry(t?: string | null){
+      // clear previous timer
+      if (expiryTimer.current) {
+        try { clearTimeout(expiryTimer.current) } catch {}
+        expiryTimer.current = null
+      }
+      if (!t) return
+      try {
+        const parts = t.split('.')
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')))
+          if (payload && typeof payload.exp === 'number'){
+            const now = Math.floor(Date.now()/1000)
+            const ms = (payload.exp - now) * 1000
+            if (ms <= 0) {
+              try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+            } else {
+              // schedule tokenExpired event
+              expiryTimer.current = window.setTimeout(() => {
+                try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+              }, ms) as unknown as number
+            }
+          }
+        }
+      } catch(e) {
+        // ignore malformed token
+      }
+    }
+
     async function fetchMe(){
+      scheduleExpiry(token)
       if (!token) return
       setLoading(true)
       try{
@@ -43,6 +75,8 @@ export const AuthProvider: React.FC<{children:React.ReactNode}> = ({ children })
   useEffect(()=>{
     function onTokenExpired(){
       try { localStorage.removeItem('token') } catch {}
+      // clear any scheduled timer
+      try { if (expiryTimer.current) { clearTimeout(expiryTimer.current); expiryTimer.current = null } } catch {}
       setToken(null)
       setUser(null)
       navigate('/login')
@@ -58,6 +92,8 @@ export const AuthProvider: React.FC<{children:React.ReactNode}> = ({ children })
       if (res.token){
         localStorage.setItem('token', res.token)
         setToken(res.token)
+        // schedule auto-logout based on token exp
+        try { const ev = new Event('tokenExpirySchedule'); } catch {}
         // buscar user
         const info = await meReq()
         setUser({ nome: info.nome, email: info.email })
@@ -78,6 +114,7 @@ export const AuthProvider: React.FC<{children:React.ReactNode}> = ({ children })
 
   function logout(){
     localStorage.removeItem('token')
+    try { if (expiryTimer.current) { clearTimeout(expiryTimer.current); expiryTimer.current = null } } catch {}
     setToken(null)
     setUser(null)
     navigate('/login')
