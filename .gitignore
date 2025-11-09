@@ -1,0 +1,84 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite / build
+dist/
+build/
+.vite/
+
+# Production
+.env
+.env.*.local
+.env.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+coverage-report/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Mac
+.DS_Store
+
+# Misc
+.cache/
+.parcel-cache/
+*.tgz
+
+# Storybook
+.out/
+
+# Optional npm cache directory
+.npm/
+
+# lock files (keep them if you want to commit them)
+# package-lock.json
+# yarn.lock
+
+# OS generated files
+Thumbs.db
+
+# Temporary
+*.tmp
+
+# Local env and secrets
+local.env
+
+# Build output
+dist-*
+build-*
+
+# TypeScript
+*.tsbuildinfo
+
+# JetBrains
+.idea/
+
+# Coverage
+coverage/
+
+# Docker
+docker-compose.override.yml
+
+# Vercel
+.vercel/
+
+# Logs created by Vite
+*.local
+
+# Other
+*.pem
+
