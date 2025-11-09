@@ -1,6 +1,7 @@
 :root{
   /* inverted (light) theme with dark semi-transparent cards */
-  --bg-gradient: linear-gradient(180deg,#ffffff 0%, #f7f6ff 100%);
+  /* fundo radial: centro mais claro, bordas um pouco mais escuras (subtil) */
+  --bg-gradient: radial-gradient(circle at center, rgba(255,255,255,0.98) 0%, rgba(249,247,255,0.9) 35%, rgba(244,241,250,0.95) 65%, rgba(240,237,247,1) 100%);
   --card-bg: rgba(12,10,20,0.07); /* dark semi-transparent card */
   --card-bg-strong: rgba(12,10,20,0.12);
   --accent-start: #9b5de5;
@@ -30,6 +31,28 @@ select option{background:#fff;color:var(--text)}
 /* colored pill for register/login primary action (alternate dark) */
 .action-pill{display:inline-block;padding:10px 16px;border-radius:999px;background:linear-gradient(90deg,#c084fc,#7c3aed);color:#fff;font-weight:700}
 .nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+
+/* header visual: site-header ocupa a largura total no topo e é levemente mais escuro que o fundo principal */
+.site-header{
+  width:100%;
+  /* ocupar a largura total no topo, mas NÃO ficar fixo ao rolar (removido sticky) */
+  position:static;
+  background: rgba(12,10,20,0.055); /* ajuste sutil para cobrir o topo sem ficar forte */
+  border-bottom: 1px solid rgba(11,18,32,0.04);
+  backdrop-filter: blur(4px);
+}
+
+.site-header .container{ /* mantenha o mesmo padding entre conteúdo e bordas */
+  /* remover margem padrão da .container quando estiver dentro do header
+     para evitar colapso de margin que empurra o header para baixo */
+  margin: 0 auto;
+  padding-top:12px;
+  padding-bottom:12px;
+}
+
+/* garantir que nenhum espaço branco apareça acima do header devido a
+   margin collapse do filho; forçar stacking context ajuda em alguns browsers */
+.site-header{display:block}
 .series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .series-item{background:var(--card-bg);padding:14px;border-radius:8px;border:1px solid rgba(11,18,32,0.06)}
 @media (max-width:600px){.container{padding:12px;margin:12px}}
