@@ -25,6 +25,9 @@ function joinUrl(base: string, path: string){
 
 export async function request(path: string, opts: RequestInit = {}){
   const url = joinUrl(API_BASE, path)
+  const method = (opts.method || 'GET').toUpperCase()
+  // notify loader: request started
+  try { window.dispatchEvent(new CustomEvent('apiRequestStart', { detail: { url, method } })) } catch {}
   // Normalize headers into a Headers instance to avoid type issues and undefined values
   const headers = new Headers()
 
@@ -46,61 +49,70 @@ export async function request(path: string, opts: RequestInit = {}){
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
 
   let res: Response
-  // Dev debug: log request details (helps identificar problemas CORS/URL/headers)
-  if (import.meta.env.DEV) {
-    try { console.debug('[api] fetch', { url, opts: { ...opts, headers }, API_BASE }) } catch {}
-  }
-  // checar expiração do token client-side (se houver) para logout imediato
+  // wrap the full request flow to guarantee apiRequestEnd is emitted
   try {
-    const token = localStorage.getItem('token')
-    if (token) {
-      const parts = token.split('.')
-      if (parts.length === 3) {
-        try {
-          const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')))
-          if (payload && typeof payload.exp === 'number'){
-            const now = Math.floor(Date.now()/1000)
-            if (payload.exp < now) {
-              // token expirado: remover e notificar app
-              try { localStorage.removeItem('token') } catch {}
-              try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
-              const err = new Error('Token expirado') as Error & { code?: string }
-              err.code = 'TOKEN_EXPIRED'
-              throw err
+    // Dev debug: log request details (helps identificar problemas CORS/URL/headers)
+    if (import.meta.env.DEV) {
+      try { console.debug('[api] fetch', { url, opts: { ...opts, headers }, API_BASE }) } catch {}
+    }
+    // checar expiração do token client-side (se houver) para logout imediato
+    try {
+      const token = localStorage.getItem('token')
+      if (token) {
+        const parts = token.split('.')
+        if (parts.length === 3) {
+          try {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')))
+            if (payload && typeof payload.exp === 'number'){
+              const now = Math.floor(Date.now()/1000)
+              if (payload.exp < now) {
+                // token expirado: remover e notificar app
+                try { localStorage.removeItem('token') } catch {}
+                try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+                const err = new Error('Token expirado') as Error & { code?: string }
+                err.code = 'TOKEN_EXPIRED'
+                throw err
+              }
             }
-          }
-        }catch(e){/* ignore malformed token payload */}
+          }catch(e){/* ignore malformed token payload */}
+        }
       }
+    } catch(e) {
+      // qualquer erro aqui não deve bloquear o request normal
     }
-  } catch(e) {
-    // qualquer erro aqui não deve bloquear o request normal
-  }
 
-  try {
-    res = await fetch(url, { ...opts, headers })
-  } catch (e: any) {
-    // network error (DNS, CORS preflight blocked by browser will appear as TypeError in browser)
-    const message = `Network error when fetching ${url}: ${e?.message || String(e)}`
-    const err = new Error(message) as Error & { cause?: any }
-    err.cause = e
-    throw err
-  }
-  const text = await res.text()
-  let data: unknown = null
-  try { data = text ? JSON.parse(text) : null } catch(e){ data = text }
-  if (!res.ok) {
-    // se servidor respondeu 401, remover token e notificar o app
-    if (res.status === 401) {
-      try { localStorage.removeItem('token') } catch {}
-      try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+    try {
+      res = await fetch(url, { ...opts, headers })
+    } catch (e: any) {
+      // network error (DNS, CORS preflight blocked by browser will appear as TypeError in browser)
+      const message = `Network error when fetching ${url}: ${e?.message || String(e)}`
+      const err = new Error(message) as Error & { cause?: any }
+      err.cause = e
+      throw err
     }
-    const message = (data && typeof data === 'object' && 'message' in (data as any))
-      ? (data as any).message
-      : res.statusText || 'Erro na requisição'
-    const err = new Error(String(message)) as Error & { status?: number; data?: unknown }
-    err.status = res.status
-    err.data = data
-    throw err
+    const text = await res.text()
+    let data: unknown = null
+    try { data = text ? JSON.parse(text) : null } catch(e){ data = text }
+    if (!res.ok) {
+      // se servidor respondeu 401, remover token e notificar o app
+      if (res.status === 401) {
+        try { localStorage.removeItem('token') } catch {}
+        try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+      }
+      const message = (data && typeof data === 'object' && 'message' in (data as any))
+        ? (data as any).message
+        : res.statusText || 'Erro na requisição'
+      const err = new Error(String(message)) as Error & { status?: number; data?: unknown }
+      err.status = res.status
+      err.data = data
+      throw err
+    }
+    return data
+  } finally {
+    try { window.dispatchEvent(new CustomEvent('apiRequestEnd', { detail: { url, method } })) } catch {}
   }
-  return data
 }
+
+// ensure loader end event emitted for every request (listener in app will manage counter)
+// Note: we dispatch the 'apiRequestEnd' event in a global finally by wrapping the exported request
+

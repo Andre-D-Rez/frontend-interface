@@ -168,7 +168,7 @@ export default function Dashboard(){
   return (
     <div>
       <div className="nav">
-        <h3>MySeriesList</h3>
+        <h3>Minha Lista</h3>
         <div>
           <button className="btn btn-lg" onClick={logout}>Logout</button>
         </div>
