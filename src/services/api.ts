@@ -50,6 +50,31 @@ export async function request(path: string, opts: RequestInit = {}){
   if (import.meta.env.DEV) {
     try { console.debug('[api] fetch', { url, opts: { ...opts, headers }, API_BASE }) } catch {}
   }
+  // checar expiração do token client-side (se houver) para logout imediato
+  try {
+    const token = localStorage.getItem('token')
+    if (token) {
+      const parts = token.split('.')
+      if (parts.length === 3) {
+        try {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')))
+          if (payload && typeof payload.exp === 'number'){
+            const now = Math.floor(Date.now()/1000)
+            if (payload.exp < now) {
+              // token expirado: remover e notificar app
+              try { localStorage.removeItem('token') } catch {}
+              try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+              const err = new Error('Token expirado') as Error & { code?: string }
+              err.code = 'TOKEN_EXPIRED'
+              throw err
+            }
+          }
+        }catch(e){/* ignore malformed token payload */}
+      }
+    }
+  } catch(e) {
+    // qualquer erro aqui não deve bloquear o request normal
+  }
 
   try {
     res = await fetch(url, { ...opts, headers })
@@ -64,6 +89,11 @@ export async function request(path: string, opts: RequestInit = {}){
   let data: unknown = null
   try { data = text ? JSON.parse(text) : null } catch(e){ data = text }
   if (!res.ok) {
+    // se servidor respondeu 401, remover token e notificar o app
+    if (res.status === 401) {
+      try { localStorage.removeItem('token') } catch {}
+      try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
+    }
     const message = (data && typeof data === 'object' && 'message' in (data as any))
       ? (data as any).message
       : res.statusText || 'Erro na requisição'
