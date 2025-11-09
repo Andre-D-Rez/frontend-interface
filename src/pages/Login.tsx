@@ -25,7 +25,6 @@ export default function Login(){
       await login(email,senha)
       toast.success('Login realizado')
     }catch(err:any){
-      // show backend message/body when available to help debugging
       const backendMsg = err?.data?.message || (err?.data ? JSON.stringify(err.data) : null)
       const show = backendMsg ? `${err?.message || 'Erro ao logar'} — ${backendMsg}` : (err?.message || 'Erro ao logar')
       if (import.meta.env.DEV) console.error('[login error]', err)

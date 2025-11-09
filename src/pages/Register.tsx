@@ -8,10 +8,9 @@ export default function Register(){
   const [nome,setNome] = useState('')
   const [email,setEmail] = useState('')
   const [senha,setSenha] = useState('')
-  // keep internal variable name 'senha' for UI i18n but send field as 'password'
+  // keep internal variable name 'name' and 'senha', but send field as 'name' and 'password'
   const [showSenha, setShowSenha] = useState(false)
   const [error,setError] = useState<string| null>(null)
-  // debug helpers removed
 
   function validate(){
     if (!isValidName(nome)) return 'Nome é obrigatório e precisa ter ao menos 2 caracteres'
@@ -32,10 +31,8 @@ export default function Register(){
       await register(nome,email,senha)
       toast.success('Registro criado! Faça login.')
     }catch(err:any){
-      // show backend message/body when available to help debugging
       const backendMsg = err?.data?.message || (err?.data ? JSON.stringify(err.data) : null)
       const show = backendMsg ? `${err?.message || 'Erro ao cadastrar'} — ${backendMsg}` : (err?.message || 'Erro ao cadastrar')
-      // in dev show full data in console
       if (import.meta.env.DEV) console.error('[register error]', err)
       toast.error(show)
     }
@@ -69,7 +66,6 @@ export default function Register(){
         {error && <div style={{color:'salmon'}}>{error}</div>}
         <button type="submit" className="btn btn-lg" disabled={loading}>{loading? 'Carregando...' : 'Criar conta'}</button>
       </form>
-      {/* debug removed */}
     </div>
   )
 }

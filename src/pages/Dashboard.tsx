@@ -15,16 +15,31 @@ function SeriesForm({ onSave, initial }:{ onSave:(s:ISeries)=>Promise<void>, ini
 
   async function submit(e:React.FormEvent){
     e.preventDefault()
+    const isCreate = !initial
     if (!titulo.trim()){ setError('Título é obrigatório'); return }
     if (!status){ setError('Status é obrigatório'); return }
+    if (nota === '') { setError('Nota é obrigatória'); return }
     const n = Number(nota)
-    if (isNaN(n) || n < 0 || n > 10){ setError('Nota deve ser entre 0 e 10'); return }
+    if (Number.isNaN(n) || n < 0 || n > 10){ setError('Nota deve ser entre 0 e 10'); return }
+
+    if (numeroTemporadas.trim() === '') { setError('Número de temporadas é obrigatório'); return }
+    const nt = Number(numeroTemporadas)
+    if (Number.isNaN(nt) || nt < 1) { setError('Número de temporadas deve ser igual ou maior que 1'); return }
+
+    if (episodiosTotais.trim() === '') { setError('Episódios totais é obrigatório'); return }
+    const et = Number(episodiosTotais)
+    if (Number.isNaN(et) || et < 1) { setError('Episódios totais deve ser igual ou maior que 1'); return }
+
+    if (episodiosAssistidos.trim() === '') { setError('Episódios assistidos é obrigatório'); return }
+    const ea = Number(episodiosAssistidos)
+    if (Number.isNaN(ea) || ea < 0 || ea > et) { setError('Episódios assistidos inválido'); return }
+
     const payload: ISeries = {
       titulo,
       nota: n,
-      numeroTemporadas: Number(numeroTemporadas) || 1,
-      episodiosTotais: Number(episodiosTotais) || 1,
-      episodiosAssistidos: Number(episodiosAssistidos) || 0,
+      numeroTemporadas: nt,
+      episodiosTotais: et,
+      episodiosAssistidos: ea,
       status: status as SeriesStatus
     }
     setError(null)
@@ -67,7 +82,6 @@ export default function Dashboard(){
     try{
       const data = await fetchSeries(filters)
       let list = data || []
-      // apply client-side filtering fallback if filters provided (backend may ignore query params)
       if (filters && Object.keys(filters).length){
         const f = filters as Record<string, any>
         list = list.filter((s: ISeries) => {
@@ -128,7 +142,6 @@ export default function Dashboard(){
 
   async function handleUpdate(id:string, payload:Partial<ISeries>){
     try{
-      // default to PATCH for partial updates
       await updateSeriesPatch(id, payload)
       toast.success('Atualizado')
       await load()

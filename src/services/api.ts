@@ -1,11 +1,10 @@
 /// <reference types="vite/client" />
-// Base URL da API (lido de Vite env). Tipos do Vite garantem que import.meta.env esteja disponível.
 const API_BASE: string = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000'
 
-/**
+/* 
  * Retorna headers de autorização quando existir token salvo no localStorage.
  * Sempre retorna um Record<string,string> para ser compatível com fetch.
- */
+*/
 export function getAuthHeaders(): Record<string,string>{
   const token = localStorage.getItem('token')
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -14,10 +13,9 @@ export function getAuthHeaders(): Record<string,string>{
 /**
  * Realiza uma requisição fetch para a API configurada em VITE_API_BASE.
  * Normaliza headers, trata JSON e lança erro com informações úteis.
- * @param path caminho a partir da base da API (ex: '/login')
+ * @param path caminho a partir da base da API
  */
 function joinUrl(base: string, path: string){
-  // remove barras duplicadas entre base e path
   const a = base.replace(/\/+$/,'')
   const b = path.replace(/^\/+/, '')
   return `${a}/${b}`
@@ -26,12 +24,9 @@ function joinUrl(base: string, path: string){
 export async function request(path: string, opts: RequestInit = {}){
   const url = joinUrl(API_BASE, path)
   const method = (opts.method || 'GET').toUpperCase()
-  // notify loader: request started
   try { window.dispatchEvent(new CustomEvent('apiRequestStart', { detail: { url, method } })) } catch {}
-  // Normalize headers into a Headers instance to avoid type issues and undefined values
   const headers = new Headers()
 
-  // merge provided headers (object, array, or Headers)
   if (opts.headers) {
     const h = opts.headers as HeadersInit
     if (h instanceof Headers) {
@@ -49,13 +44,10 @@ export async function request(path: string, opts: RequestInit = {}){
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
 
   let res: Response
-  // wrap the full request flow to guarantee apiRequestEnd is emitted
   try {
-    // Dev debug: log request details (helps identificar problemas CORS/URL/headers)
     if (import.meta.env.DEV) {
       try { console.debug('[api] fetch', { url, opts: { ...opts, headers }, API_BASE }) } catch {}
     }
-    // checar expiração do token client-side (se houver) para logout imediato
     try {
       const token = localStorage.getItem('token')
       if (token) {
@@ -66,7 +58,6 @@ export async function request(path: string, opts: RequestInit = {}){
             if (payload && typeof payload.exp === 'number'){
               const now = Math.floor(Date.now()/1000)
               if (payload.exp < now) {
-                // token expirado: remover e notificar app
                 try { localStorage.removeItem('token') } catch {}
                 try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
                 const err = new Error('Token expirado') as Error & { code?: string }
@@ -78,7 +69,7 @@ export async function request(path: string, opts: RequestInit = {}){
         }
       }
     } catch(e) {
-      // qualquer erro aqui não deve bloquear o request normal
+      // ignore errors checking token expiration
     }
 
     try {
@@ -94,7 +85,6 @@ export async function request(path: string, opts: RequestInit = {}){
     let data: unknown = null
     try { data = text ? JSON.parse(text) : null } catch(e){ data = text }
     if (!res.ok) {
-      // se servidor respondeu 401, remover token e notificar o app
       if (res.status === 401) {
         try { localStorage.removeItem('token') } catch {}
         try { window.dispatchEvent(new Event('tokenExpired')) } catch {}
@@ -112,7 +102,3 @@ export async function request(path: string, opts: RequestInit = {}){
     try { window.dispatchEvent(new CustomEvent('apiRequestEnd', { detail: { url, method } })) } catch {}
   }
 }
-
-// ensure loader end event emitted for every request (listener in app will manage counter)
-// Note: we dispatch the 'apiRequestEnd' event in a global finally by wrapping the exported request
-

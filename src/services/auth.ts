@@ -1,7 +1,6 @@
 import { request, getAuthHeaders } from './api'
 
 export async function registerUser(payload: { name: string, email: string, password: string }): Promise<any>{
-  // backend expects 'name' and 'password' fields
   return request('/api/register', { method: 'POST', body: JSON.stringify(payload) }) as Promise<any>
 }
 
