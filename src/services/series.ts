@@ -13,7 +13,6 @@ function buildQuery(params?: Record<string,string|number|undefined>){
 export async function fetchSeries(filters?: Record<string,string|number|undefined>): Promise<ISeries[]>{
   const q = buildQuery(filters)
   const res = await request(`/api/series${q}`, { method: 'GET', headers: getAuthHeaders() })
-  // backend may return the list directly or wrapped in an object (e.g. { data: [...] } or { series: [...] })
   if (Array.isArray(res)) return res as ISeries[]
   if (res && typeof res === 'object'){
     const anyRes: any = res
@@ -21,7 +20,6 @@ export async function fetchSeries(filters?: Record<string,string|number|undefine
     if (Array.isArray(anyRes.series)) return anyRes.series as ISeries[]
     if (Array.isArray(anyRes.result)) return anyRes.result as ISeries[]
   }
-  // fallback: return empty array to avoid runtime errors in the UI
   return []
 }
 
@@ -29,26 +27,18 @@ export async function createSeries(payload: ISeries): Promise<ISeries>{
   return request('/api/series', { method: 'POST', body: JSON.stringify(payload), headers: getAuthHeaders() }) as Promise<ISeries>
 }
 
-/**
- * Buscar uma série específica por id
- */
+/* Buscar uma série específica por id */
 export async function getSeriesById(id: string): Promise<ISeries | null>{
   const res = await request(`/api/series/${id}`, { method: 'GET', headers: getAuthHeaders() })
   return (res as ISeries) ?? null
 }
 
-/**
- * Atualização completa da série (substitui todos os campos) — usa HTTP PUT.
- * Use quando todos os campos da entidade forem atualizados.
- */
+/* Atualização completa da série (PUT) */
 export async function updateSeriesPut(id: string, payload: ISeries): Promise<ISeries>{
   return request(`/api/series/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: getAuthHeaders() }) as Promise<ISeries>
 }
 
-/**
- * Atualização parcial da série — usa HTTP PATCH.
- * Use quando apenas alguns campos devem ser modificados.
- */
+/* Atualização parcial da série (PATCH) */
 export async function updateSeriesPatch(id: string, payload: Partial<ISeries>): Promise<ISeries>{
   return request(`/api/series/${id}`, { method: 'PATCH', body: JSON.stringify(payload), headers: getAuthHeaders() }) as Promise<ISeries>
 }
