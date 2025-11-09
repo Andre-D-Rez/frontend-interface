@@ -17,12 +17,14 @@ export default function App(){
   return (
     <div>
       <GlobalLoader />
-      <header className="container nav">
-        <h2><Link to="/" style={{color:'black',textDecoration:'none'}}>MySeriesList</Link></h2>
-        <nav>
-          <Link to="/register" style={{marginRight:8}}>Registrar</Link>
-          <Link to="/login">Login</Link>
-        </nav>
+      <header className="site-header">
+        <div className="container nav">
+          <h2><Link to="/" style={{color:'black',textDecoration:'none'}}>MySeriesList</Link></h2>
+          <nav>
+            <Link to="/register" style={{marginRight:8}}>Registrar</Link>
+            <Link to="/login">Login</Link>
+          </nav>
+        </div>
       </header>
       <main className="container">
         <Routes>
