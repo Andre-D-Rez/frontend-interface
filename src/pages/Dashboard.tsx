@@ -43,7 +43,7 @@ function SeriesForm({ onSave, initial }:{ onSave:(s:ISeries)=>Promise<void>, ini
         <option value={SeriesStatus.CONCLUIDO}>Concluído</option>
       </select>
       {error && <div style={{color:'salmon'}}>{error}</div>}
-      <button type="submit">Salvar</button>
+      <button type="submit" className="btn btn-lg">Salvar</button>
     </form>
   )
 }
@@ -166,9 +166,9 @@ export default function Dashboard(){
   return (
     <div>
       <div className="nav">
-        <h3>Minha Lista</h3>
+        <h3>MySeriesList</h3>
         <div>
-          <button onClick={logout}>Logout</button>
+          <button className="btn btn-lg" onClick={logout}>Logout</button>
         </div>
       </div>
       <div style={{marginTop:12}}>
@@ -177,7 +177,7 @@ export default function Dashboard(){
             <h4>Editar série</h4>
             <SeriesForm onSave={handleEditSave} initial={editingInitial} />
             <div style={{marginTop:8}}>
-              <button onClick={() => { setEditingId(null); setEditingInitial(undefined) }}>Cancelar edição</button>
+              <button className="btn" onClick={() => { setEditingId(null); setEditingInitial(undefined) }}>Cancelar edição</button>
             </div>
           </div>
         ) : (
@@ -185,7 +185,7 @@ export default function Dashboard(){
         )}
       </div>
 
-      <div style={{marginTop:12, padding:8, border:'1px solid #eee', borderRadius:6}}>
+      <div className="filter-box" style={{marginTop:12}}>
         <strong>Filtrar séries</strong>
         <div style={{display:'flex',gap:8,marginTop:8,alignItems:'center'}}>
           <input placeholder="Título (contém)" value={qTitle} onChange={e=>setQTitle(e.target.value)} />
@@ -198,8 +198,8 @@ export default function Dashboard(){
           <input placeholder="Nota mínima" value={qMinNota} onChange={e=>setQMinNota(e.target.value)} type="number" min={0} max={10} style={{width:120}} />
           <input placeholder="Nota máxima" value={qMaxNota} onChange={e=>setQMaxNota(e.target.value)} type="number" min={0} max={10} style={{width:120}} />
           <div>
-            <button onClick={applyFilters} style={{marginRight:6}}>Aplicar filtros</button>
-            <button onClick={clearFilters}>Limpar</button>
+            <button className="btn btn-lg" onClick={applyFilters} style={{marginRight:6}}>Aplicar filtros</button>
+            <button className="btn btn-lg" onClick={clearFilters}>Limpar</button>
           </div>
         </div>
       </div>
@@ -215,8 +215,8 @@ export default function Dashboard(){
                 <div>Episódios: {s.episodiosAssistidos}/{s.episodiosTotais}</div>
                 <div>Status: {s.status}</div>
                 <div style={{display:'flex',gap:6,marginTop:8}}>
-                  <button onClick={()=>handleDelete(s._id)}>Deletar</button>
-                  <button onClick={() => { setEditingId(s._id||null); setEditingInitial(s) }}>Editar</button>
+                  <button className="btn btn-lg" onClick={()=>handleDelete(s._id)}>Deletar</button>
+                  <button className="btn btn-lg" onClick={() => { setEditingId(s._id||null); setEditingInitial(s) }}>Editar</button>
                 </div>
               </div>
             ))}

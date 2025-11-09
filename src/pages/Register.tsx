@@ -76,7 +76,7 @@ export default function Register(){
           Sua senha deve ter ao menos 8 caracteres e incluir: uma letra maiúscula, uma letra minúscula, um número e um caractere especial.
         </div>
         {error && <div style={{color:'salmon'}}>{error}</div>}
-        <button type="submit" disabled={loading}>{loading? 'Carregando...' : 'Criar conta'}</button>
+        <button type="submit" className="btn-dark btn-lg" disabled={loading}>{loading? 'Carregando...' : 'Criar conta'}</button>
       </form>
       {import.meta.env.DEV && debugVisible && (
         <div style={{marginTop:12, fontSize:13, background:'#f7f7f7', padding:8}}>

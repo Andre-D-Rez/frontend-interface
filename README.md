@@ -36,6 +36,7 @@ API (endpoints esperados)
 - Series (protegido por token):
   - GET /series
   - POST /series
+  - PUT /series/:id
   - PATCH /series/:id
   - DELETE /series/:id
 
