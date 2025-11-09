@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { fetchSeries, createSeries, updateSeries, deleteSeries } from '../services/series'
+import { fetchSeries, createSeries, updateSeriesPut, updateSeriesPatch, deleteSeries } from '../services/series'
 import { ISeries, SeriesStatus } from '../types'
 import { useAuth } from '../hooks/useAuth'
 import { toast } from 'react-toastify'
@@ -126,7 +126,8 @@ export default function Dashboard(){
 
   async function handleUpdate(id:string, payload:Partial<ISeries>){
     try{
-      await updateSeries(id,payload)
+      // default to PATCH for partial updates
+      await updateSeriesPatch(id, payload)
       toast.success('Atualizado')
       await load()
     }catch(err:any){ toast.error(err?.message || 'Erro ao atualizar') }
@@ -135,8 +136,26 @@ export default function Dashboard(){
   async function handleEditSave(payload: ISeries){
     if (!editingId) return
     try{
-      // use PATCH via updateSeries
-      await updateSeries(editingId, payload)
+      // decidir entre PUT (substituição completa) e PATCH (parcial)
+      const original = editingInitial || {}
+      const keys: (keyof ISeries)[] = ['titulo','nota','numeroTemporadas','episodiosTotais','episodiosAssistidos','status']
+      // verificar se o usuário alterou todos os campos (substituição completa)
+      const allChanged = keys.every(k => (original as any)[k] !== undefined && (original as any)[k] !== (payload as any)[k])
+      if (allChanged) {
+        await updateSeriesPut(editingId, payload)
+      } else {
+        // construir payload parcial com apenas os campos alterados
+        const partial: Partial<ISeries> = {}
+        keys.forEach(k => {
+          if ((original as any)[k] !== (payload as any)[k]) (partial as any)[k] = (payload as any)[k]
+        })
+        // se nenhum campo mudou (por segurança), envia o payload completo via PUT
+        if (Object.keys(partial).length === 0) {
+          await updateSeriesPut(editingId, payload)
+        } else {
+          await updateSeriesPatch(editingId, partial)
+        }
+      }
       toast.success('Série atualizada')
       setEditingId(null)
       setEditingInitial(undefined)
