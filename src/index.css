@@ -44,6 +44,19 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--hover-
 
 .small-muted{color:var(--muted);font-size:0.9rem}
 
+/* responsive improvements for filter row */
+.filter-row{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.filter-row input,.filter-row select{min-width:120px;flex:1 1 150px}
+.filter-row .actions{display:flex;gap:8px;align-items:center}
+
+@media (max-width:640px){
+  .filter-box{padding:10px}
+  .filter-row{flex-direction:column;align-items:stretch}
+  .filter-row input,.filter-row select{flex:unset;width:100%}
+  .filter-row .actions{flex-direction:column}
+  .filter-row .actions .btn-lg{width:100%}
+}
+
 /* Global loader overlay */
 .global-loader-overlay{
   position:fixed;

@@ -189,7 +189,7 @@ export default function Dashboard(){
 
       <div className="filter-box" style={{marginTop:12}}>
         <strong>Filtrar séries</strong>
-        <div style={{display:'flex',gap:8,marginTop:8,alignItems:'center'}}>
+        <div className="filter-row">
           <input placeholder="Título (contém)" value={qTitle} onChange={e=>setQTitle(e.target.value)} />
           <select value={qStatus} onChange={e=>setQStatus(e.target.value)}>
             <option value="">Todos os status</option>
@@ -199,7 +199,7 @@ export default function Dashboard(){
           </select>
           <input placeholder="Nota mínima" value={qMinNota} onChange={e=>setQMinNota(e.target.value)} type="number" min={0} max={10} style={{width:120}} />
           <input placeholder="Nota máxima" value={qMaxNota} onChange={e=>setQMaxNota(e.target.value)} type="number" min={0} max={10} style={{width:120}} />
-          <div>
+          <div className="actions">
             <button className="btn btn-lg" onClick={applyFilters} style={{marginRight:6}}>Aplicar filtros</button>
             <button className="btn btn-lg" onClick={clearFilters}>Limpar</button>
           </div>
